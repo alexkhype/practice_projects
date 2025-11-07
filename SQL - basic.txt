@@ -1,0 +1,162 @@
+INTRODUCTION TO SQL
+
+SELECT DISTINCT category AS unique_categories
+FROM products
+ORDER BY rating DESC
+LIMIT 10;
+
+    SELECT specifies which columns to retrieve
+    it's a _best practice_ to only select the columns you actually need
+
+    DISTINCT (optional) is placed immediately after SELECT
+    It identifies and returns only the unique values from the column
+
+    AS assigns a new display name to the column that precedes it
+    the alias appears in the column header of your results
+    useful when building reports or when clearer column names for analysis are needed
+
+    FROM products tells SQL to get the data from the products table
+    ; is the statement terminator—it marks the end of your command
+
+    ORDER BY sorts the results by the column, lowest to highest
+
+    DESC sorts the results by the column, highest to lowest
+    goes right after the column name (because that is what you're sorting)
+
+    LIMIT keyword to restrict the number of rows returned.
+
+
+
+
+
+INTERMEDIATE SQL
+
+SELECT COUNT(*) AS total_records
+FROM people;   
+    
+    COUNT(*) tells you how many records are in a table.
+
+SELECT COUNT(birthdate) AS count_birthdates
+FROM people;
+
+    COUNT(field) counts the number of non-missing values in a particular field
+
+SELECT COUNT(name) AS count_names, COUNT(birthdate) AS count_birthdates
+FROM people;
+
+    To count more than one field, we need to use COUNT multiple times.
+
+SELECT COUNT(DISTINCT birthdate) AS count_distinct_birthdates
+FROM people;
+
+    Combining COUNT with DISTINCT counts the number of unique values in a field. 
+
+**Check Holywell's style guide: https://www.sqlstyle.guide/
+
+SELECT "release year"
+FROM films;
+
+    " "  indicate that, despite being two words, the name refers to just one field
+
+SELECT title
+FROM films
+WHERE release_year > 1960;
+
+    WHERE filters data that fulfills a condition
+    comes after the FROM statement, but before LIMIT
+
+SELECT title
+FROM films
+WHERE release_year <> 1960;
+
+    <, >, <=, >=, =
+    <> means "except" (!=). e.g. show all the titles except those released in 1960
+
+SELECT title
+FROM films
+WHERE country = 'Japan';
+
+    'string' only single quotations
+
+-- Select film_id and imdb_score with an imdb_score over 7.0
+SELECT film_id, imdb_score
+FROM reviews
+WHERE imdb_score > 7.0;
+
+-- Select film_id and facebook_likes for ten records with less than 1000 likes 
+SELECT film_id, facebook_likes
+FROM reviews
+WHERE facebook_likes < 1000
+LIMIT 10;
+
+-- Count the records with at least 100,000 votes
+SELECT COUNT(*) AS films_over_100K_votes
+FROM reviews
+WHERE num_votes >= 100000;
+
+-- Count the Spanish-language films
+SELECT COUNT(language) AS count_spanish
+FROM films
+WHERE language = 'Spanish';
+
+SELECT *
+FROM coats
+WHERE color = 'yellow' OR length = 'short';
+
+    OR satisfies at least one condition in out filter
+    combined with WHERE
+    specify the field for every OR condition
+
+SELECT *
+FROM coats
+WHERE color = 'yellow' AND length = 'short';
+
+    AND satisfies all criteria in our filter
+    combined with WHERE
+    specify the field for every AND condition
+
+
+SELECT title
+FROM films
+WHERE (release_year = 1994 OR release_year = 1995)
+    AND (certification = 'PG' OR certification = 'R');
+
+    If a query has multiple filtering conditions, we will need to enclose the individual 
+    clauses in parentheses to ensure the correct execution order
+
+SELECT *
+FROM coats
+WHERE buttons BETWEEN 1 AND 5;
+
+    BETWEEN filters values within a specified range. 
+    combined with WHERE
+
+-- Select the title and release_year for all German-language films released before 2000
+SELECT title, release_year
+FROM films
+WHERE language = 'German'
+    AND release_year < 2000;
+
+-- Select all records for German-language films released after 2000 and before 2010
+SELECT *
+FROM films
+WHERE language = 'German'
+    AND (release_year > 2000 AND release_year < 2010);
+
+-- Select the title and release_year of films released in 1990 or 1999, 
+which were in English or Spanish and took in more than $2,000,000 gross.
+
+SELECT title, release_year
+FROM films
+WHERE (release_year = 1990 OR release_year = 1999)
+	AND (language = 'English' OR language = 'Spanish')
+	AND (gross > 2000000);
+
+-- Select the title and release_year of all Spanish or French-language films released 
+between 1990 and 2000 (inclusive) with budgets over $100 million.
+
+SELECT title, release_year
+FROM films
+WHERE release_year BETWEEN 1990 AND 2000
+	AND budget > 100000000
+	AND (language = 'Spanish' OR language = 'French');
