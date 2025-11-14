@@ -480,16 +480,92 @@ SELECT DISTINCT continent,
 FROM states;
 
 
-
-
-SELECT countries.name AS country,
--- Subquery that provides the count of cities   
+SELECT name AS country,
   (SELECT COUNT(name)
    FROM cities
-   WHERE country_code = countries.code) AS cities_num
+   WHERE cities.country_code = countries.code) AS cities_num
 FROM countries
 ORDER BY cities_num DESC, country
 LIMIT 9;
+
+--Equals
+SELECT countries.name AS country, 
+    COUNT(cities.name) AS cities_num
+FROM countries
+LEFT JOIN cities
+ON countries.code = cities.country_code
+GROUP BY country
+ORDER BY cities_num DESC, country
+LIMIT 9;
+
+
+
+INSIDE FROM
+***********
+
+this query returns duplicates for multiple occurrences of id when it matches in both tables. We can drop duplicates using the DISTINCT command in the query shown.
+
+SELECT left_table.id, left_val
+FROM left_table, right_table
+WHERE left_table.id = right_table.ide
+
+SELECT DISTINCT monarchs.continent, sub.most_recent
+FROM monarchs,
+    (SELECT,
+        continent,
+        MAX(indep_year) AS most_recent
+     FROM states
+     GROUP BY continent) AS sub
+WHERE monarchs.continent = sub.continent
+ORDER BY continent;
+
+-- Select local_name and lang_num from appropriate tables
+SELECT local_name, lang_num
+FROM countries,
+  -- Select code, and language count as lang_num
+  (SELECT code, COUNT(*) AS lang_num
+  FROM languages
+  GROUP BY code) AS sub
+-- Where codes match
+WHERE countries.code = sub.code
+ORDER BY lang_num DESC;
+
+
+-- Select relevant fields
+SELECT code, 
+       inflation_rate, 
+       unemployment_rate
+FROM economies 
+WHERE year = 2015 
+  AND code IN
+-- Subquery returning country codes filtered on gov_form
+	(SELECT code
+   FROM countries
+   WHERE gov_form LIKE '%Republic%' 
+         OR gov_form LIKE '%Monarchy%')
+ORDER BY inflation_rate;
+
+
+
+-- Select fields from cities
+SELECT name,
+       country_code, 
+       city_proper_pop, 
+       metroarea_pop, 
+       (city_proper_pop / metroarea_pop * 100) AS city_perc
+FROM cities  
+-- Add filter condition such that metroarea_pop does not have null values
+WHERE name IN
+    (SELECT capital
+     FROM countries
+     WHERE continent = 'Europe'
+        OR continent LIKE '%America')
+    AND metroarea_pop IS NOT NULL
+-- Sort and limit the result
+ORDER BY city_perc DESC
+LIMIT 10;
+
+
 
 
 
