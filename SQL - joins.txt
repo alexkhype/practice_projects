@@ -348,3 +348,148 @@ FROM cities
 EXCEPT
 SELECT name
 FROM countries;
+
+
+********************
+***  SUBQUERIES  ***
+********************
+
+
+INSIDE WHERE
+************
+
+The WHERE clause is the most common place for subqueries, because filtering data is one of the most common data manipulation tasks. Subqueries inside WHERE can be from the same table or from a different table, provided the result of the subquery is of the same data type as the field we are filtering on. 
+
+
+SEMI JOIN
+=========
+
+A semi join chooses records in the first table where a condition is met in the second table. More specifically, the semi join will return all values of left_table where values of col1 are in a column we specify, namely col2 in the right_table. 
+
+Step 1 - Where is the relevant data?
+
+SELECT country, continent, president
+FROM presidents;
+
+Step 2 - What is the filter?
+
+SELECT country
+FROM states
+WHERE indep_year < 1800;
+
+Step 3 - Merge!
+
+--Determine countries that gained independence before 1800
+
+SELECT country, continent, president
+FROM presidents
+WHERE country IN
+    (SELECT country
+     FROM states
+     WHERE indep_year < 1800);
+
+-- Select country code for countries in the Middle East
+SELECT code
+FROM countries
+WHERE region = 'Middle East';
+
+-- Select unique language names
+SELECT DISTINCT name 
+FROM languages
+-- Order by the name of the language
+ORDER BY name;
+
+SELECT DISTINCT name
+FROM languages
+-- Add syntax to use bracketed subquery below as a filter
+WHERE code IN
+    (SELECT code
+    FROM countries
+    WHERE region = 'Middle East')
+ORDER BY name;
+
+
+-- Select average life_expectancy from the populations table
+SELECT AVG(life_expectancy)
+FROM populations
+-- Filter for the year 2015
+WHERE year = 2015;
+
+SELECT *
+FROM populations
+WHERE year = 2015
+-- Filter for only those populations where life expectancy is 1.15 times higher than average
+  AND life_expectancy > 1.15 *
+  -- The result of the previous query becomes an argument
+  (SELECT AVG(life_expectancy)
+   FROM populations
+   WHERE year = 2015);
+
+
+-- Select relevant fields from cities table
+SELECT name, country_code, urbanarea_pop
+FROM cities
+-- Filter using a subquery on the countries table
+WHERE name IN
+    (SELECT capital
+     FROM countries)
+ORDER BY urbanarea_pop DESC;
+
+Anti join
+=========
+
+The anti join chooses records in the first table where col1 does NOT find a match in col2. It can be particularly useful for identifying whether an incorrect number of records appears in a jo 
+
+--Determine countries in the Americas founded after 1800
+
+SELECT country, president
+FROM presidents
+WHERE continent LIKE '%America'
+    AND country NOT IN
+        (SELECT country
+         FROM states
+         WHERE indep_year < 1800);
+
+
+SELECT code, name
+FROM countries
+WHERE continent = 'Oceania'
+-- Filter for countries not included in the bracketed subquery
+  AND code NOT IN
+    (SELECT code
+    FROM currencies);
+
+
+
+
+INSIDE SELECT
+*************
+
+-- How many monarchs per continent
+
+SELECT DISTINCT continent
+FROM states;
+
+SELECT COUNT(*)
+FROM monarchs
+
+SELECT DISTINCT continent,
+    (SELECT COUNT(*)
+     FROM monarchs
+     WHERE states.continent = monarch.continent) AS monarch_count
+FROM states;
+
+
+
+
+SELECT countries.name AS country,
+-- Subquery that provides the count of cities   
+  (SELECT COUNT(name)
+   FROM cities
+   WHERE country_code = countries.code) AS cities_num
+FROM countries
+ORDER BY cities_num DESC, country
+LIMIT 9;
+
+
+
